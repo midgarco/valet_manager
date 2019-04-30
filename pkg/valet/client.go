@@ -1,7 +1,12 @@
 package valet
 
+import (
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
+)
+
 // Client information
 type Client struct {
-	ID   int    `json:"id"`
+	gorm.Model
 	Name string `json:"name"`
 }

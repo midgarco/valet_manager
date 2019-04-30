@@ -47,23 +47,29 @@ func (h Handler) Auth(next http.Handler) http.Handler {
 			return
 		}
 
-		user := &valet.User{}
+		authUser := valet.User{}
 		decryptString, err := crypt.Decrypt(session)
 		if err != nil {
 			h.Logger.WithError(err).Error("decrypting user session")
 			http.Error(w, "", http.StatusInternalServerError)
 			return
 		}
-		err = json.Unmarshal([]byte(decryptString), user)
+		err = json.Unmarshal([]byte(decryptString), &authUser)
 		if err != nil {
 			h.Logger.WithError(err).Error("unmarshaling user json session")
 			http.Error(w, "", http.StatusInternalServerError)
 			return
 		}
-		h.Logger.WithField("user", user).WithField("key", state.AuthUser).Trace("authenticated user found")
+
+		user := valet.User{}
+		if err := h.Connection.DB.Where("email = ? AND token = ?", authUser.Email, token).First(&user).Error; err != nil {
+			h.Logger.WithField("session", token).WithError(err).Error("invalid session token")
+			http.Error(w, "", http.StatusUnauthorized)
+			return
+		}
 
 		// store the auth user in context
-		ctx := context.WithValue(r.Context(), state.AuthUser, user)
+		ctx := context.WithValue(r.Context(), state.AuthUser, authUser)
 
 		// Update the session expiration
 		_, err = h.Connection.Redis.ExpireAt("session_"+token, time.Now().Add(time.Hour*1)).Result()

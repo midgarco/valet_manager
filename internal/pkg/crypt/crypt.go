@@ -8,7 +8,7 @@ import (
 	"encoding/base64"
 	"errors"
 
-	"github.com/midgarco/valet_manager/config"
+	"github.com/midgarco/valet_manager/pkg/config"
 )
 
 func getCipher(key string) (cipher.Block, error) {

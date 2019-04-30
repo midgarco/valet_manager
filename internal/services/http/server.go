@@ -20,6 +20,12 @@ func StartServer(logger log.Interface) {
 		logger.WithError(err).Fatalf("error occured connecting to redis")
 	}
 
+	// mysql connection
+	if err := conn.MySQLConnection(); err != nil {
+		logger.WithError(err).Fatalf("error occured connecting to database")
+	}
+	defer conn.DB.Close()
+
 	h := web.Handler{
 		Logger:     logger,
 		Connection: conn,
