@@ -11,13 +11,14 @@ import (
 func (h Handler) APIIndex(w http.ResponseWriter, r *http.Request) {
 	h.Logger.Info("/api index")
 
-	snap := state.Snap{}
+	authuser := r.Context().Value(state.AuthUser)
 
-	user := r.Context().Value(state.AuthUser)
-	snap[state.AuthUser] = user
+	snap := state.Snap{}
+	snap[state.AuthUser] = authuser
 
 	b, err := json.Marshal(snap)
 	if err != nil {
+		h.Logger.WithError(err).Error("marshal state snapshot")
 		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}

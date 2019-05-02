@@ -69,7 +69,7 @@ func (h Handler) Auth(next http.Handler) http.Handler {
 		}
 
 		// store the auth user in context
-		ctx := context.WithValue(r.Context(), state.AuthUser, authUser)
+		ctx := context.WithValue(r.Context(), state.AuthUser, user)
 
 		// Update the session expiration
 		_, err = h.Connection.Redis.ExpireAt("session_"+token, time.Now().Add(time.Hour*1)).Result()
@@ -77,7 +77,8 @@ func (h Handler) Auth(next http.Handler) http.Handler {
 			h.Logger.WithError(err).Error("could not update session expiration")
 		}
 
-		// Call the next handler, which can be another middleware in the chain, or the final handler.
+		// Call the next handler, which can be another middleware in the chain,
+		// or the final handler.
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

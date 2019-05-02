@@ -8,6 +8,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/midgarco/utilities/form"
+	"github.com/midgarco/valet_manager/internal/state"
 	"github.com/midgarco/valet_manager/pkg/valet"
 	"github.com/rs/xid"
 	"golang.org/x/crypto/bcrypt"
@@ -70,10 +71,14 @@ func (h Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// marshal the user response
-	b, err := json.Marshal(user)
+	snap := state.Snap{}
+	snap[state.AuthUser] = user
+	snap[state.Token] = token
+
+	// marshal the state snapshot response
+	b, err := json.Marshal(snap)
 	if err != nil {
-		h.Logger.WithError(err).Error("marshal user object")
+		h.Logger.WithError(err).Error("marshal state snapshot object")
 		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}

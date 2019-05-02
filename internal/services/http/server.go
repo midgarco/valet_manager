@@ -20,8 +20,8 @@ func StartServer(logger log.Interface) {
 		logger.WithError(err).Fatalf("error occured connecting to redis")
 	}
 
-	// mysql connection
-	if err := conn.MySQLConnection(); err != nil {
+	// database connection
+	if err := conn.DBConnection(); err != nil {
 		logger.WithError(err).Fatalf("error occured connecting to database")
 	}
 	defer conn.DB.Close()
@@ -49,6 +49,10 @@ func StartServer(logger log.Interface) {
 	// api sub routes
 	apirouter := r.PathPrefix("/api").Subrouter()
 	apirouter.HandleFunc("/", h.APIIndex)
+	apirouter.HandleFunc("/users", h.GetUsers).Methods("GET")
+	apirouter.HandleFunc("/users", h.CreateUser).Methods("POST")
+	apirouter.HandleFunc("/users/{id}", h.GetUser).Methods("GET")
+	apirouter.HandleFunc("/users/{id}", h.UpdateUser).Methods("PUT")
 
 	// api catch all
 	apirouter.HandleFunc("", func(w http.ResponseWriter, r *http.Request) {

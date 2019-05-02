@@ -42,8 +42,8 @@ func (c *Connection) RedisConnection() error {
 	return nil
 }
 
-// MySQLConnection establishes the connection to the MySQL server
-func (c *Connection) MySQLConnection() error {
+// DBConnection establishes the connection to the database server
+func (c *Connection) DBConnection() error {
 	host := config.Get("DB_HOST")
 	port := config.GetWithDefault("DB_PORT", "3306")
 	database := config.Get("DB_NAME")

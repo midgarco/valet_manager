@@ -8,6 +8,7 @@ import (
 	"github.com/midgarco/valet_manager/internal/manager"
 	"github.com/midgarco/valet_manager/pkg/config"
 	"github.com/midgarco/valet_manager/pkg/valet"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func TestUser_Create(t *testing.T) {
@@ -48,12 +49,15 @@ func TestUser_Create(t *testing.T) {
 				FirstName: tt.fields.FirstName,
 				LastName:  tt.fields.LastName,
 				Email:     tt.fields.Email,
+				Password:  tt.fields.Password,
 			}
-			u.SetPassword(tt.fields.Password)
 			if err := u.Create(tt.args.db); err != nil {
 				t.Error(err)
 			}
 
+			if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(tt.fields.Password)); err != nil {
+				t.Errorf("password failed")
+			}
 			if u.ID == 0 {
 				t.Errorf("failed to create user")
 			}
