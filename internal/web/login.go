@@ -37,8 +37,8 @@ func (h Handler) Login(w http.ResponseWriter, r *http.Request) {
 	}).Trace("login attempt")
 
 	// Get the user from the database
-	user := valet.User{}
-	if err := h.Connection.DB.Where("email = ?", email).First(&user).Error; err != nil {
+	user, err := valet.GetUserByEmail(h.Connection.DB, email)
+	if err != nil {
 		h.Logger.WithError(err).Error("could not find user")
 		http.Error(w, "", http.StatusNotFound)
 		return
@@ -63,7 +63,7 @@ func (h Handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// set the user in an authenticated session
-	err := h.SetAuthenticatedUser(&user)
+	err = h.SetAuthenticatedUser(user)
 	if err != nil {
 		h.Logger.WithError(err).Error("setting authenticated user")
 		http.Error(w, "", http.StatusInternalServerError)

@@ -11,11 +11,13 @@ import (
 // User information
 type User struct {
 	gorm.Model
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Email     string `json:"email"`
-	Password  string `json:"-"`
-	Token     string `json:"-"`
+	FirstName string  `json:"first_name"`
+	LastName  string  `json:"last_name"`
+	Email     string  `json:"email"`
+	Password  string  `json:"-"`
+	Token     string  `json:"-"`
+	Address   Address `json:"address" gorm:"foreignkey:address_id"`
+	AddressID uint    `json:"-"`
 }
 
 // Hook Functions
@@ -72,6 +74,11 @@ func (u *User) SetPassword(pass string) error {
 
 // Create a new user
 func (u *User) Create(db *gorm.DB) error {
+	// check for an existing user
+	ex := User{}
+	if !db.Where("email = ?", u.Email).First(&ex).RecordNotFound() {
+		return errors.New("email already exists")
+	}
 	return db.Create(u).Error
 }
 
@@ -83,7 +90,7 @@ func (u *User) Save(db *gorm.DB) error {
 // FindUser queries the database for the user data
 func FindUser(db *gorm.DB, id int) (*User, error) {
 	u := User{}
-	if err := db.First(&u, id).Error; err != nil {
+	if err := db.Preload("Address").First(&u, id).Error; err != nil {
 		return nil, err
 	}
 	return &u, nil
@@ -92,8 +99,17 @@ func FindUser(db *gorm.DB, id int) (*User, error) {
 // FindUsers queries for all users
 func FindUsers(db *gorm.DB) ([]User, error) {
 	users := []User{}
-	if err := db.Find(&users).Error; err != nil {
+	if err := db.Preload("Address").Find(&users).Error; err != nil {
 		return nil, err
 	}
 	return users, nil
+}
+
+// GetUserByEmail finds the user record with the provided email address
+func GetUserByEmail(db *gorm.DB, email string) (*User, error) {
+	u := User{}
+	if err := db.Preload("Address").Where("email = ?", email).First(&u).Error; err != nil {
+		return nil, err
+	}
+	return &u, nil
 }

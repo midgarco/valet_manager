@@ -1,7 +1,10 @@
 package valet
 
 import (
+	"fmt"
+	"strconv"
 	"testing"
+	"time"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -17,6 +20,10 @@ func TestUser_Create(t *testing.T) {
 		LastName  string
 		Email     string
 		Password  string
+		Address   string
+		City      string
+		State     string
+		Zipcode   string
 	}
 	type args struct {
 		db *gorm.DB
@@ -25,7 +32,7 @@ func TestUser_Create(t *testing.T) {
 	_ = config.LoadEnv("../config", config.Option{"APP_ENV", "local"})
 
 	conn := &manager.Connection{}
-	_ = conn.MySQLConnection()
+	_ = conn.DBConnection()
 	defer conn.DB.Close()
 
 	tests := []struct {
@@ -37,8 +44,12 @@ func TestUser_Create(t *testing.T) {
 		{name: "Create User", fields: fields{
 			FirstName: "Jeff",
 			LastName:  "Dupont",
-			Email:     "jeff.dupont@gmail.com",
+			Email:     fmt.Sprintf("jeff.dupont+test-%s@gmail.com", strconv.Itoa(int(time.Now().Unix()))),
 			Password:  "pass123",
+			Address:   "123 Main St",
+			City:      "Anycity",
+			State:     "CA",
+			Zipcode:   "00001",
 		}, args: args{
 			db: conn.DB,
 		}},
@@ -50,6 +61,12 @@ func TestUser_Create(t *testing.T) {
 				LastName:  tt.fields.LastName,
 				Email:     tt.fields.Email,
 				Password:  tt.fields.Password,
+				Address: valet.Address{
+					Line1:   tt.fields.Address,
+					City:    tt.fields.City,
+					State:   tt.fields.State,
+					Zipcode: tt.fields.Zipcode,
+				},
 			}
 			if err := u.Create(tt.args.db); err != nil {
 				t.Error(err)

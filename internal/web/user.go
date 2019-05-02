@@ -69,6 +69,7 @@ func (h Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	user.LastName = fd.Get("last_name")
 	user.Email = fd.Get("email")
 
+	// save the user back to the database
 	if err := user.Save(h.Connection.DB); err != nil {
 		h.Logger.WithError(err).Error("saving user to the db")
 		http.Error(w, "", http.StatusInternalServerError)
