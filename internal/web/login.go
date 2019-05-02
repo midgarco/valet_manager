@@ -1,7 +1,6 @@
 package web
 
 import (
-	"encoding/json"
 	"net/http"
 	"runtime/debug"
 	"strings"
@@ -71,14 +70,12 @@ func (h Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	snap := state.Snap{}
-	snap[state.AuthUser] = user
-	snap[state.Token] = token
-
-	// marshal the state snapshot response
-	b, err := json.Marshal(snap)
+	b, err := state.DisplayJSON(
+		state.SetSnip(state.AuthUser, user),
+		state.SetSnip(state.Token, token),
+	)
 	if err != nil {
-		h.Logger.WithError(err).Error("marshal state snapshot object")
+		h.Logger.WithError(err).Error("display state snapshot")
 		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
