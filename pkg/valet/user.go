@@ -13,7 +13,7 @@ type User struct {
 	gorm.Model
 	FirstName string  `json:"first_name"`
 	LastName  string  `json:"last_name"`
-	Email     string  `json:"email"`
+	Email     string  `json:"email" gorm:"unique_index"`
 	Password  string  `json:"-"`
 	Token     string  `json:"-"`
 	Address   Address `json:"address" gorm:"foreignkey:address_id"`
