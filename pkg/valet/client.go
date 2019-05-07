@@ -8,5 +8,7 @@ import (
 // Client information
 type Client struct {
 	gorm.Model
-	Name string `json:"name"`
+	Name      string  `json:"name"`
+	Address   Address `json:"address" gorm:"foreignkey:address_id"`
+	AddressID uint    `json:"-"`
 }

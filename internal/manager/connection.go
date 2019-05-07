@@ -65,6 +65,8 @@ func (c *Connection) DBConnection() error {
 		&valet.Shift{},
 		&valet.Client{},
 		&valet.Address{},
+		&valet.Contact{},
+		&valet.Phone{},
 	)
 
 	return nil

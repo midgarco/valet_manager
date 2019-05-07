@@ -11,13 +11,14 @@ import (
 // User information
 type User struct {
 	gorm.Model
-	FirstName string  `json:"first_name"`
-	LastName  string  `json:"last_name"`
-	Email     string  `json:"email" gorm:"unique_index"`
-	Password  string  `json:"-"`
-	Token     string  `json:"-"`
-	Address   Address `json:"address" gorm:"foreignkey:address_id"`
-	AddressID uint    `json:"-"`
+	FirstName    string  `json:"first_name"`
+	LastName     string  `json:"last_name"`
+	Email        string  `json:"email" gorm:"unique_index"`
+	Password     string  `json:"-"`
+	Token        string  `json:"-"`
+	Address      Address `json:"address" gorm:"foreignkey:address_id"`
+	AddressID    uint    `json:"-"`
+	PhoneNumbers []Phone `json:"phone_numbers" gorm:"many2many:user_phones;"`
 }
 
 // Hook Functions

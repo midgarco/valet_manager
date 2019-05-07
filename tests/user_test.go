@@ -16,14 +16,17 @@ import (
 
 func TestUser_Create(t *testing.T) {
 	type fields struct {
-		FirstName string
-		LastName  string
-		Email     string
-		Password  string
-		Address   string
-		City      string
-		State     string
-		Zipcode   string
+		FirstName   string
+		LastName    string
+		Email       string
+		Password    string
+		Address     string
+		City        string
+		State       string
+		Zipcode     string
+		HomePhone   string
+		WorkPhone   string
+		MobilePhone string
 	}
 	type args struct {
 		db *gorm.DB
@@ -42,14 +45,17 @@ func TestUser_Create(t *testing.T) {
 	}{
 		// TODO: Add test cases.
 		{name: "Create User", fields: fields{
-			FirstName: "Jeff",
-			LastName:  "Dupont",
-			Email:     fmt.Sprintf("jeff.dupont+test-%s@gmail.com", strconv.Itoa(int(time.Now().Unix()))),
-			Password:  "pass123",
-			Address:   "123 Main St",
-			City:      "Anycity",
-			State:     "CA",
-			Zipcode:   "00001",
+			FirstName:   "Jeff",
+			LastName:    "Dupont",
+			Email:       fmt.Sprintf("jeff.dupont+test-%s@gmail.com", strconv.Itoa(int(time.Now().Unix()))),
+			Password:    "pass123",
+			Address:     "123 Main St",
+			City:        "Anycity",
+			State:       "CA",
+			Zipcode:     "00001",
+			HomePhone:   "222 123-4567",
+			WorkPhone:   "333 456-7890",
+			MobilePhone: "444 567-8901",
 		}, args: args{
 			db: conn.DB,
 		}},
@@ -66,6 +72,11 @@ func TestUser_Create(t *testing.T) {
 					City:    tt.fields.City,
 					State:   tt.fields.State,
 					Zipcode: tt.fields.Zipcode,
+				},
+				PhoneNumbers: []valet.Phone{
+					valet.Phone{Type: "home", Number: tt.fields.HomePhone},
+					valet.Phone{Type: "work", Number: tt.fields.WorkPhone},
+					valet.Phone{Type: "mobile", Number: tt.fields.MobilePhone},
 				},
 			}
 			if err := u.Create(tt.args.db); err != nil {
