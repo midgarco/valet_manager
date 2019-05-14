@@ -10,6 +10,8 @@ import (
 // Shift information
 type Shift struct {
 	gorm.Model
-	Start time.Time `json:"start_time"`
-	End   time.Time `json:"end_time"`
+	Name    string    `json:"name"`
+	Weekday string    `json:"weekday"`
+	Start   time.Time `json:"start_time"`
+	End     time.Time `json:"end_time"`
 }

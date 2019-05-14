@@ -35,7 +35,11 @@ func TestUser_Create(t *testing.T) {
 	_ = config.LoadEnv("../config", config.Option{"APP_ENV", "local"})
 
 	conn := &manager.Connection{}
-	_ = conn.DBConnection()
+	err := conn.DBConnection()
+	if err != nil {
+		t.Error(err)
+		return
+	}
 	defer conn.DB.Close()
 
 	tests := []struct {
@@ -81,13 +85,16 @@ func TestUser_Create(t *testing.T) {
 			}
 			if err := u.Create(tt.args.db); err != nil {
 				t.Error(err)
+				return
 			}
 
 			if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(tt.fields.Password)); err != nil {
 				t.Errorf("password failed")
+				return
 			}
 			if u.ID == 0 {
 				t.Errorf("failed to create user")
+				return
 			}
 		})
 	}
