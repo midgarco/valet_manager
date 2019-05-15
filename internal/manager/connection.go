@@ -7,7 +7,7 @@ import (
 
 	"github.com/go-redis/redis"
 	"github.com/jinzhu/gorm"
-	"github.com/midgarco/valet_manager/pkg/config"
+	"github.com/midgarco/env"
 	"github.com/midgarco/valet_manager/pkg/valet"
 )
 
@@ -19,8 +19,8 @@ type Connection struct {
 
 // RedisConnection establishes the connection to the Redis server
 func (c *Connection) RedisConnection() error {
-	host := config.Get("REDIS_HOST")
-	port := config.GetWithDefault("REDIS_PORT", "6379")
+	host := env.Get("REDIS_HOST")
+	port := env.GetWithDefault("REDIS_PORT", "6379")
 
 	if host == "" {
 		return errors.New("no redis connection configured")
@@ -44,11 +44,11 @@ func (c *Connection) RedisConnection() error {
 
 // DBConnection establishes the connection to the database server
 func (c *Connection) DBConnection() error {
-	host := config.Get("DB_HOST")
-	port := config.GetWithDefault("DB_PORT", "3306")
-	database := config.Get("DB_NAME")
-	user := config.Get("DB_USER")
-	pass := config.Get("DB_PASS")
+	host := env.Get("DB_HOST")
+	port := env.GetWithDefault("DB_PORT", "3306")
+	database := env.Get("DB_NAME")
+	user := env.Get("DB_USER")
+	pass := env.Get("DB_PASS")
 
 	if host == "" || database == "" {
 		return errors.New("no mysql connection configured")

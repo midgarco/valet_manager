@@ -1,5 +1,4 @@
 {
     "go.testEnvVars": {
-        "GOCACHE": "off"
     }
 }

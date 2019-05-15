@@ -8,7 +8,7 @@ import (
 	"encoding/base64"
 	"errors"
 
-	"github.com/midgarco/valet_manager/pkg/config"
+	"github.com/midgarco/env"
 )
 
 func getCipher(key string) (cipher.Block, error) {
@@ -39,7 +39,7 @@ func unpadBlocks(input []byte) ([]byte, error) {
 
 // Encrypt ...
 func Encrypt(input string) (string, error) {
-	key := config.Get("APP_KEY")
+	key := env.Get("APP_KEY")
 	if key == "" {
 		return "", errors.New("application key not configured")
 	}
@@ -65,7 +65,7 @@ func Encrypt(input string) (string, error) {
 
 // Decrypt ...
 func Decrypt(input string) (string, error) {
-	key := config.Get("APP_KEY")
+	key := env.Get("APP_KEY")
 	if key == "" {
 		return "", errors.New("application key not configured")
 	}

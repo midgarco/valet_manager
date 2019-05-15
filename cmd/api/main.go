@@ -7,8 +7,8 @@ import (
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
 	"github.com/apex/log/handlers/multi"
+	"github.com/midgarco/env"
 	"github.com/midgarco/valet_manager/internal/services/http"
-	"github.com/midgarco/valet_manager/pkg/config"
 )
 
 var (
@@ -34,7 +34,7 @@ func main() {
 	})
 
 	// parse the environment file
-	err := config.LoadEnv(flagConfigPath, config.Option{"APP_ENV", flagEnvironment})
+	err := env.Load(flagConfigPath, env.Option{"APP_ENV", flagEnvironment})
 	if err != nil {
 		logger.Warnf("Could not parse configuration file '%s': %v", flagConfigPath, err)
 		return

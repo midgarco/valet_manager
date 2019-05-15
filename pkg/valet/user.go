@@ -19,6 +19,7 @@ type User struct {
 	Address      Address `json:"address" gorm:"foreignkey:address_id"`
 	AddressID    uint    `json:"-"`
 	PhoneNumbers []Phone `json:"phone_numbers" gorm:"many2many:user_phones;"`
+	Admin        bool    `json:"-"`
 }
 
 // Hook Functions

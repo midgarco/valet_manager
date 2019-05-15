@@ -5,10 +5,10 @@ import (
 
 	"github.com/apex/log"
 	"github.com/gorilla/mux"
+	"github.com/midgarco/env"
 	"github.com/midgarco/valet_manager/internal/manager"
 	"github.com/midgarco/valet_manager/internal/middleware"
 	"github.com/midgarco/valet_manager/internal/web"
-	"github.com/midgarco/valet_manager/pkg/config"
 )
 
 // StartServer will spin up the service
@@ -65,16 +65,16 @@ func StartServer(logger log.Interface) {
 	apirouter.Use(mw.Auth)
 
 	// Pprof server
-	if config.GetBool("PROFILER_ENABLED") {
+	if env.GetBool("PROFILER_ENABLED") {
 		go func() {
-			port := config.GetWithDefault("PROFILER_PORT", "8765")
+			port := env.GetWithDefault("PROFILER_PORT", "8765")
 			if err := http.ListenAndServe(":"+port, nil); err != nil {
 				logger.WithError(err).Fatalf("error starting profiler")
 			}
 		}()
 	}
 
-	port := config.GetWithDefault("APP_PORT", "80")
+	port := env.GetWithDefault("APP_PORT", "80")
 	logger.WithField("port", port).Infof("starting HTTP")
 	if err := http.ListenAndServe(":"+port, r); err != nil {
 		logger.WithField("port", port).WithError(err).Fatalf("error occured starting HTTP listener")

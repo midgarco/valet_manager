@@ -8,8 +8,8 @@ import (
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/midgarco/env"
 	"github.com/midgarco/valet_manager/internal/manager"
-	"github.com/midgarco/valet_manager/pkg/config"
 	"github.com/midgarco/valet_manager/pkg/valet"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -32,7 +32,7 @@ func TestUser_Create(t *testing.T) {
 		db *gorm.DB
 	}
 
-	_ = config.LoadEnv("../config", config.Option{"APP_ENV", "local"})
+	_ = env.Load("../config", env.Option{"APP_ENV", "local"})
 
 	conn := &manager.Connection{}
 	err := conn.DBConnection()
