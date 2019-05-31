@@ -14,7 +14,26 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+var conn *manager.Connection
+
+func setupTestCase(t *testing.T) func(*testing.T) {
+	_ = env.Load("VALET_MGR", "../config", env.Option{"APP_ENV", "local"})
+
+	conn = &manager.Connection{}
+	err := conn.DBConnection()
+	if err != nil {
+		t.Error(err)
+	}
+
+	return func(t *testing.T) {
+		conn.DB.Close()
+	}
+}
+
 func TestUser_Create(t *testing.T) {
+	teardown := setupTestCase(t)
+	defer teardown(t)
+
 	type fields struct {
 		FirstName   string
 		LastName    string
@@ -31,16 +50,6 @@ func TestUser_Create(t *testing.T) {
 	type args struct {
 		db *gorm.DB
 	}
-
-	_ = env.Load("../config", env.Option{"APP_ENV", "local"})
-
-	conn := &manager.Connection{}
-	err := conn.DBConnection()
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	defer conn.DB.Close()
 
 	tests := []struct {
 		name   string

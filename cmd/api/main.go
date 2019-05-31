@@ -8,10 +8,15 @@ import (
 	"github.com/apex/log/handlers/cli"
 	"github.com/apex/log/handlers/multi"
 	"github.com/midgarco/env"
-	"github.com/midgarco/valet_manager/internal/services/http"
+	"github.com/midgarco/valet_manager/internal/services/api"
 )
 
+// Flag options that provide values for reading config files and
+// connecting to data stores.
 var (
+	Version = "unset"
+	Build   = "unset"
+
 	flagConfigPath  string
 	flagEnvironment string
 )
@@ -30,15 +35,17 @@ func main() {
 
 	logger := log.WithFields(log.Fields{
 		"service":     "api",
+		"version":     Version,
+		"build":       Build,
 		"environment": flagEnvironment,
 	})
 
 	// parse the environment file
-	err := env.Load(flagConfigPath, env.Option{"APP_ENV", flagEnvironment})
+	err := env.Load("VALET_MGR", flagConfigPath, env.Option{"APP_ENV", flagEnvironment})
 	if err != nil {
 		logger.Warnf("Could not parse configuration file '%s': %v", flagConfigPath, err)
 		return
 	}
 
-	http.StartServer(logger)
+	api.StartServer(logger)
 }
