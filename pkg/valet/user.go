@@ -115,3 +115,27 @@ func GetUserByEmail(db *gorm.DB, email string) (*User, error) {
 	}
 	return &u, nil
 }
+
+// RemoveTestUser will delete ALL data related to a user
+// USED FOR TESTING!
+func RemoveTestUser(db *gorm.DB, id int) error {
+	u := User{}
+	if err := db.First(&u, id).Error; err != nil {
+		return err
+	}
+	// delete the phone numbers
+	for _, pn := range u.PhoneNumbers {
+		if err := db.Unscoped().Delete(&pn).Error; err != nil {
+			return err
+		}
+	}
+	// delete the address
+	if err := db.Unscoped().Delete(&u.Address).Error; err != nil {
+		return err
+	}
+	// finally just delete the user record
+	if err := db.Unscoped().Delete(&u).Error; err != nil {
+		return err
+	}
+	return nil
+}

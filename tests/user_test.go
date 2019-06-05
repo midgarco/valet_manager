@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/midgarco/env"
 	"github.com/midgarco/valet_manager/internal/manager"
@@ -30,81 +29,78 @@ func setupTestCase(t *testing.T) func(*testing.T) {
 	}
 }
 
+var user = &valet.User{
+	FirstName: "John",
+	LastName:  "Example",
+	Email:     fmt.Sprintf("john.example+test-%s@gmail.com", strconv.Itoa(int(time.Now().Unix()))),
+	Password:  "pass123",
+	Address: valet.Address{
+		Line1:   "123 Main St",
+		City:    "Anycity",
+		State:   "CA",
+		Zipcode: "00001",
+	},
+	PhoneNumbers: []valet.Phone{
+		valet.Phone{Type: "home", Number: "222 123-4567"},
+		valet.Phone{Type: "work", Number: "333 456-7890"},
+		valet.Phone{Type: "mobile", Number: "444 567-8901"},
+	},
+}
+
 func TestUser_Create(t *testing.T) {
 	teardown := setupTestCase(t)
 	defer teardown(t)
 
-	type fields struct {
-		FirstName   string
-		LastName    string
-		Email       string
-		Password    string
-		Address     string
-		City        string
-		State       string
-		Zipcode     string
-		HomePhone   string
-		WorkPhone   string
-		MobilePhone string
-	}
-	type args struct {
-		db *gorm.DB
+	u := user
+	if err := u.Create(conn.DB); err != nil {
+		t.Error(err)
+		return
 	}
 
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-	}{
-		// TODO: Add test cases.
-		{name: "Create User", fields: fields{
-			FirstName:   "Jeff",
-			LastName:    "Dupont",
-			Email:       fmt.Sprintf("jeff.dupont+test-%s@gmail.com", strconv.Itoa(int(time.Now().Unix()))),
-			Password:    "pass123",
-			Address:     "123 Main St",
-			City:        "Anycity",
-			State:       "CA",
-			Zipcode:     "00001",
-			HomePhone:   "222 123-4567",
-			WorkPhone:   "333 456-7890",
-			MobilePhone: "444 567-8901",
-		}, args: args{
-			db: conn.DB,
-		}},
+	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte("pass123")); err != nil {
+		t.Errorf("password failed")
+		return
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			u := &valet.User{
-				FirstName: tt.fields.FirstName,
-				LastName:  tt.fields.LastName,
-				Email:     tt.fields.Email,
-				Password:  tt.fields.Password,
-				Address: valet.Address{
-					Line1:   tt.fields.Address,
-					City:    tt.fields.City,
-					State:   tt.fields.State,
-					Zipcode: tt.fields.Zipcode,
-				},
-				PhoneNumbers: []valet.Phone{
-					valet.Phone{Type: "home", Number: tt.fields.HomePhone},
-					valet.Phone{Type: "work", Number: tt.fields.WorkPhone},
-					valet.Phone{Type: "mobile", Number: tt.fields.MobilePhone},
-				},
-			}
-			if err := u.Create(tt.args.db); err != nil {
-				t.Error(err)
-				return
-			}
+	if u.ID == 0 {
+		t.Errorf("failed to create user")
+		return
+	}
+}
 
-			if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(tt.fields.Password)); err != nil {
-				t.Errorf("password failed")
-				return
-			}
-			if u.ID == 0 {
-				t.Errorf("failed to create user")
-				return
-			}
-		})
+func TestUser_Update(t *testing.T) {
+	teardown := setupTestCase(t)
+	defer teardown(t)
+
+	u := user
+	if err := u.Create(conn.DB); err != nil {
+		t.Error(err)
+		return
+	}
+
+	// get created user
+	uu, err := valet.FindUser(conn.DB, int(u.ID))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	// update field
+	uu.LastName = "Doe"
+	uu.Save(conn.DB)
+
+	uuu, err := valet.FindUser(conn.DB, int(u.ID))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if uu.LastName != uuu.LastName {
+		t.Errorf("Update failed: want %s, got %s", uu.LastName, uuu.LastName)
+		return
+	}
+
+	if err := valet.RemoveTestUser(conn.DB, int(u.ID)); err != nil {
+		t.Error(err)
+		return
 	}
 }
