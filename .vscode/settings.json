@@ -1,4 +1,5 @@
 {
     "go.testEnvVars": {
-    }
+    },
+    "go.testFlags": ["-count=1"]
 }

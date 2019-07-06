@@ -4,9 +4,12 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/midgarco/env"
+
 	"github.com/gorilla/mux"
 	"github.com/midgarco/utilities/form"
 	"github.com/midgarco/valet_manager/internal/state"
+	"github.com/midgarco/valet_manager/pkg/pagination"
 	"github.com/midgarco/valet_manager/pkg/valet"
 )
 
@@ -127,7 +130,26 @@ func (h Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 func (h Handler) GetUsers(w http.ResponseWriter, r *http.Request) {
 	h.Logger.Info("/api/users - get users")
 
-	users, err := valet.FindUsers(h.Connection.DB)
+	qv := r.URL.Query()
+
+	limit, _ := strconv.Atoi(qv.Get("limit"))
+	if limit == 0 {
+		limit = env.GetIntWithDefault("DEFAULT_LIMIT", 25)
+	}
+	offset, _ := strconv.Atoi(qv.Get("offset"))
+
+	pg := pagination.Paging{
+		Limit:  limit,
+		Offset: offset,
+		OrderBy: []pagination.Order{
+			pagination.Order{
+				Field:     "last_name",
+				Direction: "ASC",
+			},
+		},
+	}
+
+	users, err := valet.FindUsers(h.Connection.DB, pg)
 	if err != nil {
 		h.Logger.WithError(err).Error("getting users from the db")
 		http.Error(w, "", http.StatusInternalServerError)

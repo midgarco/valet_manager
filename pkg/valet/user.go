@@ -5,6 +5,7 @@ import (
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/midgarco/valet_manager/pkg/pagination"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -99,9 +100,13 @@ func FindUser(db *gorm.DB, id int) (*User, error) {
 }
 
 // FindUsers queries for all users
-func FindUsers(db *gorm.DB) ([]User, error) {
+func FindUsers(db *gorm.DB, paging pagination.Paging) ([]User, error) {
 	users := []User{}
-	if err := db.Preload("Address").Find(&users).Error; err != nil {
+	dbh := db.Preload("Address").Offset(paging.Offset).Limit(paging.Limit)
+	for _, ord := range paging.OrderBy {
+		dbh = dbh.Order(ord.Field + " " + ord.Direction)
+	}
+	if err := dbh.Find(&users).Error; err != nil {
 		return nil, err
 	}
 	return users, nil
@@ -138,4 +143,13 @@ func RemoveTestUser(db *gorm.DB, id int) error {
 		return err
 	}
 	return nil
+}
+
+// UserCount returns the number of user records in the db
+func UserCount(db *gorm.DB) (int, error) {
+	count := 0
+	if err := db.Model(&User{}).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
 }
