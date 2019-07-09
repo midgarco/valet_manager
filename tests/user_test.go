@@ -46,10 +46,10 @@ func getUser(v int64) *valet.User {
 			State:   "CA",
 			Zipcode: "00001",
 		},
-		PhoneNumbers: []valet.Phone{
-			valet.Phone{Type: "home", Number: "222 123-4567"},
-			valet.Phone{Type: "work", Number: "333 456-7890"},
-			valet.Phone{Type: "mobile", Number: "444 567-8901"},
+		PhoneNumbers: []valet.PhoneNumber{
+			valet.PhoneNumber{Type: "home", Value: "222 123-4567"},
+			valet.PhoneNumber{Type: "work", Value: "333 456-7890"},
+			valet.PhoneNumber{Type: "mobile", Value: "444 567-8901"},
 		},
 	}
 }
@@ -58,7 +58,7 @@ func TestUser_Create(t *testing.T) {
 	teardown := setupTestCase(t)
 	defer teardown(t)
 
-	u := getUser(time.Now().Unix())
+	u := getUser(time.Now().UnixNano())
 	if err := u.Create(conn.DB); err != nil {
 		t.Error(err)
 		return
@@ -78,7 +78,7 @@ func TestUser_Update(t *testing.T) {
 	teardown := setupTestCase(t)
 	defer teardown(t)
 
-	u := getUser(time.Now().Unix())
+	u := getUser(time.Now().UnixNano())
 	if err := u.Create(conn.DB); err != nil {
 		t.Error(err)
 		return
@@ -93,6 +93,8 @@ func TestUser_Update(t *testing.T) {
 
 	// update field
 	uu.LastName = "Doe"
+	uu.Address.Line1 = "456 West St"
+	uu.PhoneNumbers[1].Value = "777 456-7890"
 	uu.Save(conn.DB)
 
 	uuu, err := valet.FindUser(conn.DB, int(u.ID))
@@ -103,7 +105,15 @@ func TestUser_Update(t *testing.T) {
 
 	if uu.LastName != uuu.LastName {
 		t.Errorf("Update failed: want %s, got %s", uu.LastName, uuu.LastName)
-		return
+	}
+	if uu.Address.Line1 != uuu.Address.Line1 {
+		t.Errorf("Update address failed: want %s, got %s", uu.Address.Line1, uuu.Address.Line1)
+	}
+	if uuu.PhoneNumbers[1].Type == "work" && uu.PhoneNumbers[1].Value != uuu.PhoneNumbers[1].Value {
+		t.Errorf("Update phone number failed: want %s, got %s", uu.PhoneNumbers[1].Value, uuu.PhoneNumbers[1].Value)
+	}
+	if u.ID != uuu.ID {
+		t.Errorf("Update process changed the ID: was %d, got %d", u.ID, uuu.ID)
 	}
 
 	if err := valet.RemoveTestUser(conn.DB, int(u.ID)); err != nil {

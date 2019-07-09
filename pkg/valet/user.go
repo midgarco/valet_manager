@@ -2,8 +2,11 @@ package valet
 
 import (
 	"errors"
+	"fmt"
+	"strings"
 
 	"github.com/jinzhu/gorm"
+	// mysql driver
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/midgarco/valet_manager/pkg/pagination"
 	"golang.org/x/crypto/bcrypt"
@@ -12,15 +15,15 @@ import (
 // User information
 type User struct {
 	gorm.Model
-	FirstName    string  `json:"first_name"`
-	LastName     string  `json:"last_name"`
-	Email        string  `json:"email" gorm:"unique_index"`
-	Password     string  `json:"-"`
-	Token        string  `json:"-"`
-	Address      Address `json:"address" gorm:"foreignkey:address_id"`
-	AddressID    uint    `json:"-"`
-	PhoneNumbers []Phone `json:"phone_numbers" gorm:"many2many:user_phones;"`
-	Admin        bool    `json:"-"`
+	FirstName    string        `json:"first_name"`
+	LastName     string        `json:"last_name"`
+	Email        string        `json:"email" gorm:"unique_index"`
+	Password     string        `json:"-"`
+	Token        string        `json:"-"`
+	Address      Address       `json:"address" gorm:"foreignkey:address_id"`
+	AddressID    uint          `json:"-"`
+	PhoneNumbers []PhoneNumber `json:"phone_numbers" gorm:"many2many:user_phone_numbers;"`
+	Admin        bool          `json:"-"`
 }
 
 // Hook Functions
@@ -93,7 +96,7 @@ func (u *User) Save(db *gorm.DB) error {
 // FindUser queries the database for the user data
 func FindUser(db *gorm.DB, id int) (*User, error) {
 	u := User{}
-	if err := db.Preload("Address").First(&u, id).Error; err != nil {
+	if err := db.Preload("Address").Preload("PhoneNumbers").First(&u, id).Error; err != nil {
 		return nil, err
 	}
 	return &u, nil
@@ -124,9 +127,14 @@ func GetUserByEmail(db *gorm.DB, email string) (*User, error) {
 // RemoveTestUser will delete ALL data related to a user
 // USED FOR TESTING!
 func RemoveTestUser(db *gorm.DB, id int) error {
+	fmt.Println("removing test user")
 	u := User{}
 	if err := db.First(&u, id).Error; err != nil {
 		return err
+	}
+	// test users have a +test filter added to the email
+	if !(strings.Index(u.Email, "+test") > 0) {
+		return nil
 	}
 	// delete the phone numbers
 	for _, pn := range u.PhoneNumbers {

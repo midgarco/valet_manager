@@ -66,7 +66,7 @@ func (c *Connection) DBConnection() error {
 		&valet.Client{},
 		&valet.Address{},
 		&valet.Contact{},
-		&valet.Phone{},
+		&valet.PhoneNumber{},
 		&valet.Employee{},
 		&valet.EmployeeAvailability{},
 	)

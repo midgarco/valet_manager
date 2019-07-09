@@ -92,11 +92,12 @@ func createSuperUser(conn *manager.Connection) error {
 			State:   "CA",
 			Zipcode: "00001",
 		},
-		PhoneNumbers: []valet.Phone{
-			valet.Phone{Type: "home", Number: "222 123-4567"},
-			valet.Phone{Type: "work", Number: "333 456-7890"},
-			valet.Phone{Type: "mobile", Number: "444 567-8901"},
+		PhoneNumbers: []valet.PhoneNumber{
+			valet.PhoneNumber{Type: "home", Value: "222 123-4567"},
+			valet.PhoneNumber{Type: "work", Value: "333 456-7890"},
+			valet.PhoneNumber{Type: "mobile", Value: "444 567-8901"},
 		},
+		Admin: true,
 	}
 
 	return user.Create(conn.DB)
